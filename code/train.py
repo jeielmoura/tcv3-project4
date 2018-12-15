@@ -39,7 +39,7 @@ with graph.as_default():
 
 	out = tf.layers.max_pooling2d(X, (2, 2), (1, 1), padding='same')
 	
-	out = tf.layers.conv2d(out, 16, (2, 2), (1, 1), padding='same', activation=tf.nn.relu)
+	out = tf.layers.conv2d(out, 32, (2, 2), (1, 1), padding='same', activation=tf.nn.relu)
 
 	out = tf.layers.dropout(out, rate=0.4, training=is_training)
 
