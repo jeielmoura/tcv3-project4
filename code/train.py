@@ -37,7 +37,7 @@ with graph.as_default():
 	
 	print(X.shape)
 
-	out = tf.layers.max_pooling2d(X, (2, 2), (1, 1), padding='same')
+	out = tf.layers.max_pooling2d(X, (2, 2), (2, 2), padding='same')
 	
 	out = tf.layers.conv2d(out, 32, (2, 2), (1, 1), padding='same', activation=tf.nn.relu)
 
@@ -52,7 +52,7 @@ with graph.as_default():
 
 	out = tf.layers.dropout(out, rate=0.4, training=is_training)
 
-	out = tf.layers.dense(out, 64, activation=tf.nn.relu)
+	out = tf.layers.dense(out, 128, activation=tf.nn.relu)
 
 	out = tf.layers.dropout(out, rate=0.4, training=is_training)
 
@@ -66,7 +66,8 @@ with graph.as_default():
 
 	train_op = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss)
 
-	result = tf.argmax(out, 1)
+	probs = tf.nn.softmax(out)
+	result = tf.argmax(probs, 1)
 	correct = tf.reduce_sum(tf.cast(tf.equal(result, y), tf.float32))
 
 # ---------------------------------------------------------------------------------------------------------- #
@@ -139,16 +140,17 @@ def train_model (model_version) :
 		best_val_acc = -1.
 		best_val_loss = -1.
 
-		saver = tf.train.Saver()
+		saver = tf.train.Saver( var_list=tf.trainable_variables() )
 
 		epoch = 1
 		while epoch <= NUM_EPOCHS_LIMIT :
 			updated = False
+			step = 0.1
 			for LR in LEARNING_RATES_ARRAY :
 				X_train, y_train = shuffle(X_train, y_train)
 
-				training_epoch(session, train_op, LR, epoch)
-				val_acc, val_loss = evaluation(session, X_val, y_val, epoch)
+				training_epoch(session, train_op, LR, epoch + step)
+				val_acc, val_loss = evaluation(session, X_val, y_val, epoch + step)
 
 				better = (best_val_acc <= val_acc and best_val_loss >= val_loss)
 				better = better and (best_val_acc < val_acc or best_val_loss > val_loss)
@@ -160,6 +162,7 @@ def train_model (model_version) :
 					best_val_loss = val_loss
 					saver.save(session, MODEL_PATH)
 					print('ACC:'+str(100*best_val_acc)+' Loss:'+str(best_val_loss))
+				step += 0.1
 
 			LEARNING_RATES_ARRAY *= LEARNING_RATE_DECAY
 			
