@@ -34,8 +34,6 @@ with graph.as_default():
 	y_one_hot = tf.one_hot(y, len(classes_train))
 	learning_rate = tf.placeholder(tf.float32)
 	is_training = tf.placeholder(tf.bool)
-	
-	print(X.shape)
 
 	out = tf.layers.max_pooling2d(X, (2, 2), (2, 2), padding='same')
 	
@@ -153,23 +151,21 @@ def train_model (model_version) :
 				val_acc, val_loss = evaluation(session, X_val, y_val, epoch + step)
 
 				better = (best_val_acc <= val_acc and best_val_loss >= val_loss)
-				better = better and (best_val_acc < val_acc or best_val_loss > val_loss)
-				better = better or (best_val_acc < 0 and best_val_loss < 0)
+				better = better or (best_val_acc < 0. and best_val_loss < 0.)
 
 				if better :
 					updated = True
 					best_val_acc = val_acc
 					best_val_loss = val_loss
 					saver.save(session, MODEL_PATH)
-					print('ACC:'+str(100*best_val_acc)+' Loss:'+str(best_val_loss))
+					print('ACC:'+str(best_val_acc)+' Loss:'+str(best_val_loss))
 				step += 0.1
 
-			LEARNING_RATES_ARRAY *= LEARNING_RATE_DECAY
+			LEARNING_RATES_ARRAY *= LEARNING_RATE_DECAY 
 			
 			if updated :
 				epoch = 1
-				print()
-				print()
+				print('\n')
 			else :
 				print('------------')
 				epoch += 1
